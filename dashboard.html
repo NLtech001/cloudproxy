@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CloudProxy Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Poppins", sans-serif; }
+    body { background: var(--bg-color); color: var(--text-color); transition: all 0.3s ease; }
+    :root {
+      --bg-color: #0f172a;
+      --card-color: #1e293b;
+      --text-color: #ffffff;
+      --primary: #38bdf8;
+    }
+    .light-theme {
+      --bg-color: #f8fafc;
+      --card-color: #e2e8f0;
+      --text-color: #0f172a;
+      --primary: #2563eb;
+    }
+
+    /* Header */
+    header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; }
+    .logout-btn {
+      background: #dc2626; color: #fff; padding: 0.6rem 1.2rem; border: none; border-radius: 0.6rem;
+      cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 0.4rem;
+      animation: pulse 1.5s infinite;
+    }
+    .logout-btn:hover { background: #b91c1c; }
+    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+
+    .theme-toggle {
+      cursor: pointer; font-size: 1.5rem; color: var(--primary); background: none; border: none; outline: none;
+      transition: transform 0.3s;
+    }
+    .theme-toggle:hover { transform: rotate(20deg); }
+
+    /* Cards */
+    main { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; padding: 2rem; }
+    .card {
+      background: var(--card-color); border-radius: 1rem; padding: 2rem; text-align: center;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3); transition: all 0.3s ease; cursor: pointer;
+    }
+    .card:hover { transform: translateY(-8px) scale(1.02); box-shadow: 0 15px 30px rgba(0,0,0,0.4); }
+    .card i { font-size: 2.5rem; margin-bottom: 1rem; color: var(--primary); }
+    .card h3 { margin-bottom: 0.5rem; font-size: 1.4rem; }
+    .card p { font-size: 0.95rem; color: var(--text-color); opacity: 0.8; }
+
+    /* Floating Telegram */
+    .telegram-float {
+      position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px;
+      background: #0088cc; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 1.8rem; box-shadow: 0 10px 25px rgba(0,0,0,0.4); cursor: grab; z-index: 999;
+      transition: transform 0.3s;
+    }
+    .telegram-float:active { cursor: grabbing; transform: scale(1.1); }
+
+.my-proxy-btn {
+  background: #f59e0b; /* matching primary-ish color */
+  color: #0f172a;
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 0.6rem;
+  cursor: pointer;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: 0.3s;
+}
+
+.my-proxy-btn:hover {
+  opacity: 0.85;
+  transform: translateY(-2px);
+}
+
+
+  </style>
+</head>
+<body>
+  <!-- Header -->
+<header>
+  <button class="logout-btn" onclick="window.location.href='index.html'">
+    <i class="fas fa-sign-out-alt"></i> Logout
+  </button>
+  <button class="my-proxy-btn" onclick="window.location.href='myproxy.html'">
+    <i class="fas fa-key"></i> My Proxy
+  </button>
+  <button class="theme-toggle" id="themeToggle">
+    <i class="fas fa-moon"></i>
+  </button>
+</header>
+
+
+  <!-- Cards -->
+  <main>
+    <div class="card" onclick="window.location.href='golden.html'">
+      <i class="fas fa-crown"></i>
+      <h3>Golden Proxy</h3>
+      <p>Premium high-speed proxy with maximum uptime and security.</p>
+    </div>
+    <div class="card" onclick="window.location.href='silver.html'">
+      <i class="fas fa-gem"></i>
+      <h3>Silver Proxy</h3>
+      <p>Reliable mid-tier proxy service balancing cost and performance.</p>
+    </div>
+    <div class="card" onclick="window.location.href='regular.html'">
+      <i class="fas fa-network-wired"></i>
+      <h3>Regular Proxy</h3>
+      <p>Standard proxy option for everyday browsing and tasks.</p>
+    </div>
+  </main>
+
+  <!-- Floating Telegram -->
+  <div class="telegram-float" id="telegramBtn">
+    <i class="fab fa-telegram-plane"></i>
+  </div>
+
+  <script>
+    // Theme Toggle (save in localStorage)
+    const toggleBtn = document.getElementById("themeToggle");
+    if (localStorage.getItem("theme") === "light") {
+      document.body.classList.add("light-theme");
+      toggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
+    }
+    toggleBtn.addEventListener("click", () => {
+      document.body.classList.toggle("light-theme");
+      if (document.body.classList.contains("light-theme")) {
+        localStorage.setItem("theme", "light");
+        toggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
+      } else {
+        localStorage.setItem("theme", "dark");
+        toggleBtn.innerHTML = '<i class="fas fa-moon"></i>';
+      }
+    });
+
+    // Telegram Redirect
+    document.getElementById("telegramBtn").addEventListener("click", () => {
+      window.open("https://t.me/cloudproxy_limited/", "_blank");
+    });
+
+    // Drag Telegram Icon
+    const telegramBtn = document.getElementById("telegramBtn");
+    telegramBtn.onmousedown = function(event) {
+      let shiftX = event.clientX - telegramBtn.getBoundingClientRect().left;
+      let shiftY = event.clientY - telegramBtn.getBoundingClientRect().top;
+
+      function moveAt(pageX, pageY) {
+        telegramBtn.style.left = pageX - shiftX + 'px';
+        telegramBtn.style.top = pageY - shiftY + 'px';
+      }
+
+      function onMouseMove(event) {
+        telegramBtn.style.position = 'fixed';
+        moveAt(event.pageX, event.pageY);
+      }
+
+      document.addEventListener('mousemove', onMouseMove);
+      telegramBtn.onmouseup = function() {
+        document.removeEventListener('mousemove', onMouseMove);
+        telegramBtn.onmouseup = null;
+      };
+    };
+
+    telegramBtn.ondragstart = () => false;
+  </script>
+</body>
+</html>
