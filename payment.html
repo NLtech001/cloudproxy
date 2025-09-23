@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -105,9 +105,24 @@
       btn.classList.add("active");
       selectedMethod = btn.dataset.method;
 
+      // Reset style for other buttons to avoid red text sticking around
+      paymentDetails.innerHTML = ""; // Clear previous content
+      paymentDetails.textContent = "Select a payment method"; // Default text
+
       switch(selectedMethod){
         case "Bkash":
-          paymentDetails.textContent = "Send Money to +8801846281788 (Cashout charge applicable)";
+          const usdAmount = parseFloat(selectedPrice) || 0;
+          const bdtRate = 127;
+          const cashoutChargePercentage = 0.02; // 2%
+
+          const baseBdtAmount = usdAmount * bdtRate;
+          const cashoutCharge = baseBdtAmount * cashoutChargePercentage;
+          const totalBdtAmount = baseBdtAmount + cashoutCharge;
+
+          // --- Start of Modified Code ---
+          // Using innerHTML to allow for color styling with <span> tags
+          paymentDetails.innerHTML = `Send <span style="color: red;">${totalBdtAmount.toFixed(2)} BDT</span> to <span style="color: red;">+88 01846281788</span> (Includes a ${cashoutCharge.toFixed(2)} BDT cashout charge).`;
+          // --- End of Modified Code ---
           break;
         case "USDT":
           paymentDetails.textContent = "Withdraw your funds to TV97HuyJejJ1pqmD1hKLb3BSFJWpvC47cQ";
