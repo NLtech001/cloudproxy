@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Golden Proxy - CloudProxy</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;font-family:"Poppins",sans-serif;}
+  body{background:var(--bg-color);color:var(--text-color);transition:all 0.3s ease;min-height:100vh;}
+  :root{--bg-color:#0f172a;--card-color:#1e293b;--text-color:#fff;--primary:#facc15;}
+  .light-theme{--bg-color:#f8fafc;--card-color:#e2e8f0;--text-color:#0f172a;--primary:#d97706;}
+  header{display:flex;justify-content:flex-start;padding:1rem 2rem;}
+  .back-btn{background:var(--primary);color:#0f172a;padding:0.6rem 1.2rem;border:none;border-radius:0.6rem;cursor:pointer;font-weight:bold;display:flex;align-items:center;gap:0.4rem;transition:0.3s;}
+  .back-btn:hover{opacity:0.85;transform:translateX(-4px);}
+  main{max-width:600px;margin:2rem auto;padding:2rem;background:var(--card-color);border-radius:1rem;box-shadow:0 10px 25px rgba(0,0,0,0.3);}
+  h2{text-align:center;margin-bottom:1.5rem;color:var(--primary);}
+  .selection-group{margin-bottom:1.5rem;}
+  .selection-group label{display:block;margin-bottom:0.8rem;font-weight:bold;font-size:1rem;}
+  .options{display:flex;flex-direction:column;gap:0.5rem;}
+  .options button{padding:0.8rem;border:none;border-radius:0.6rem;background:#334155;color:#fff;cursor:pointer;text-align:left;transition:0.3s;font-size:0.95rem;}
+  .light-theme .options button{background:#cbd5e1;color:#0f172a;}
+  .options button.active{background:var(--primary);color:#0f172a;font-weight:bold;}
+  .options button:hover{opacity:0.9;transform:scale(1.02);}
+  .price-box{text-align:center;margin:1.5rem 0;font-size:1.2rem;font-weight:bold;color:var(--primary);}
+  .proceed-btn{width:100%;padding:1rem;border:none;border-radius:0.6rem;background:var(--primary);color:#0f172a;font-size:1.1rem;font-weight:bold;cursor:pointer;transition:0.3s;text-transform:uppercase;}
+  .proceed-btn:hover{transform:translateY(-3px);opacity:0.85;}
+</style>
+</head>
+<body>
+
+<header>
+  <button class="back-btn" onclick="window.location.href='dashboard.html'"><i class="fas fa-arrow-left"></i> Back to Dashboard</button>
+</header>
+
+<main>
+  <h2>Golden Proxy Selection</h2>
+
+  <!-- Country -->
+  <div class="selection-group">
+    <label>Select Country</label>
+    <div class="options" id="countryOptions">
+      <button data-country="United States">🇺🇸 United States</button>
+      <button data-country="United Kingdom">🇬🇧 United Kingdom</button>
+      <button data-country="Canada">🇨🇦 Canada</button>
+      <button data-country="France">🇫🇷 France</button>
+      <button data-country="Germany">🇩🇪 Germany</button>
+      <button data-country="Spain">🇪🇸 Spain</button>
+      <button data-country="Italy">🇮🇹 Italy</button>
+      <button data-country="Japan">🇯🇵 Japan</button>
+    </div>
+  </div>
+
+  <!-- City -->
+  <div class="selection-group">
+    <label>Select City</label>
+    <div class="options" id="cityOptions"></div>
+  </div>
+
+  <!-- Expiration -->
+  <div class="selection-group">
+    <label>Select Expiration</label>
+    <div class="options" id="expirationOptions">
+      <button data-price="0.35">2 hours - $0.35</button>
+      <button data-price="0.60">12 hours - $0.60</button>
+      <button data-price="0.85">1 day - $0.85</button>
+      <button data-price="4.50">7 days - $4.50</button>
+      <button data-price="8.20">15 days - $8.20</button>
+      <button data-price="16.00">30 days - $16.00</button>
+    </div>
+  </div>
+
+  <div class="price-box" id="priceBox">Please select an expiration</div>
+  <button class="proceed-btn" id="proceedBtn">Proceed to Payment</button>
+</main>
+
+<script>
+  // Theme sync
+  if(localStorage.getItem("theme")==="light"){document.body.classList.add("light-theme");}
+
+  // Country → Cities
+  const cityMap={
+    "United States":["Florida","California","Pennsylvania","Washington","New York","New Jersey"],
+    "United Kingdom":["London","Manchester"],
+    "Canada":["Montareo"],
+    "France":["Paris"],
+    "Germany":["Hamburg Hanover","Berlin"],
+    "Spain":["Madrid"],
+    "Italy":["Milan"],
+    "Japan":["Tokyo"]
+  };
+
+  const countryBtns=document.querySelectorAll("#countryOptions button");
+  const cityOptions=document.getElementById("cityOptions");
+
+  countryBtns.forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      countryBtns.forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      const cities=cityMap[btn.dataset.country];
+      cityOptions.innerHTML="";
+      cities.forEach(city=>{
+        const cBtn=document.createElement("button");
+        cBtn.textContent=city;
+        cityOptions.appendChild(cBtn);
+        cBtn.addEventListener("click",()=>{
+          [...cityOptions.children].forEach(b=>b.classList.remove("active"));
+          cBtn.classList.add("active");
+        });
+      });
+    });
+  });
+
+  // Expiration + Price
+  const expirationBtns=document.querySelectorAll("#expirationOptions button");
+  const priceBox=document.getElementById("priceBox");
+
+  expirationBtns.forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      expirationBtns.forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      priceBox.textContent="Price: $"+btn.dataset.price;
+
+      // Save selected price to localStorage
+      localStorage.setItem("selectedPrice", btn.dataset.price);
+    });
+  });
+
+  // Proceed to payment
+  document.getElementById("proceedBtn").addEventListener("click",()=>{
+    window.location.href="payment.html";
+  });
+</script>
+</body>
+</html>

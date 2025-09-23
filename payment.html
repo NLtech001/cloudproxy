@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Payment - CloudProxy</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; font-family:"Poppins",sans-serif; }
+  body { background: var(--bg-color); color: var(--text-color); transition: 0.3s ease; min-height:100vh; display:flex; flex-direction:column;}
+  :root {
+    --bg-color: #0f172a;
+    --card-color: #1e293b;
+    --text-color: #ffffff;
+    --primary: #38bdf8;
+    --success-color: #22c55e;
+  }
+  .light-theme {
+    --bg-color: #f8fafc;
+    --card-color: #e2e8f0;
+    --text-color: #0f172a;
+    --primary: #2563eb;
+    --success-color: #16a34a;
+  }
+  header {display:flex;justify-content:flex-start;padding:1rem 2rem;}
+  .back-btn {
+    background: var(--primary); color:#0f172a; padding:0.6rem 1.2rem; border:none; border-radius:0.6rem;
+    cursor:pointer; font-weight:bold; display:flex; align-items:center; gap:0.4rem; transition:0.3s;
+  }
+  .back-btn:hover {opacity:0.85; transform:translateX(-4px);}
+  .container {max-width:500px; margin:2rem auto; padding:2rem; background: var(--card-color); border-radius:1rem; box-shadow:0 10px 25px rgba(0,0,0,0.3);}
+  h2 {text-align:center;margin-bottom:1.5rem;color:var(--primary);}
+  .payment-options {display:flex; flex-direction:column; gap:0.8rem; margin-bottom:1rem;}
+  .payment-options button {
+    padding:0.8rem; border:none; border-radius:0.5rem; background:#334155; color:#fff; cursor:pointer; transition:0.3s;
+    display:flex; align-items:center; gap:0.8rem; font-size:1rem;
+  }
+  .payment-options button:hover {transform:translateX(4px);}
+  .light-theme .payment-options button {background:#cbd5e1;color:#0f172a;}
+  .payment-options button.active {background:var(--primary); color:#0f172a; font-weight:bold;}
+  .details-box {
+    margin:1rem 0; padding:1rem; background:#1e293b; border-radius:0.6rem; color:#fff; min-height:50px;
+    transition: all 0.4s ease; transform: translateY(-10px); opacity:0;
+  }
+  .details-box.show { transform: translateY(0); opacity:1; }
+  .light-theme .details-box {background:#e2e8f0; color:#0f172a;}
+  input[type="text"] {width:100%; padding:0.8rem; margin:0.5rem 0; border:none; border-radius:0.5rem;}
+  button.pay-btn {width:100%; padding:0.9rem; border:none; border-radius:0.6rem; background:var(--primary); color:#0f172a; font-weight:bold; cursor:pointer; transition:0.3s;}
+  button.pay-btn:hover {opacity:0.9; transform:translateY(-2px);}
+  .success-message {text-align:center; color:var(--primary); font-weight:bold; margin-top:1rem; display:none; animation: fadeIn 0.6s ease forwards;}
+  @keyframes fadeIn {0% {opacity:0;} 100% {opacity:1;}}
+  .telegram-float {position:fixed; bottom:20px; right:20px; width:60px; height:60px; background:#0088cc; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-size:1.8rem; box-shadow:0 10px 25px rgba(0,0,0,0.4); cursor:grab; z-index:999; transition:transform 0.3s;}
+  .telegram-float:active {cursor:grabbing; transform:scale(1.1);}
+  .payment-options i {font-size:1.3rem; width:25px; text-align:center;}
+</style>
+</head>
+<body>
+
+<header>
+  <button class="back-btn" onclick="window.location.href='dashboard.html'">
+    <i class="fas fa-arrow-left"></i> Back to Dashboard
+  </button>
+</header>
+
+<div class="container">
+  <h2>Payment</h2>
+
+  <div class="payment-options">
+    <button data-method="Bkash"><i class="fas fa-mobile-alt"></i> Bkash</button>
+    <button data-method="USDT"><i class="fab fa-usd"></i> USDT (TRC20)</button>
+    <button data-method="BTC"><i class="fab fa-bitcoin"></i> BTC</button>
+    <button data-method="LTC"><i class="fab fa-litecoin"></i> LTC</button>
+  </div>
+
+  <div class="details-box" id="paymentDetails">Select a payment method</div>
+
+  <input type="text" id="amountBox" placeholder="Amount will be auto selected" readonly>
+  <input type="text" id="txnId" placeholder="Enter your Transaction ID or Code">
+
+  <button class="pay-btn" id="payBtn">Payment</button>
+  <div class="success-message" id="successMsg">
+    Payment successful! Send your transaction ID to our Telegram support.
+  </div>
+</div>
+
+<div class="telegram-float" id="telegramBtn"><i class="fab fa-telegram-plane"></i></div>
+
+<script>
+  // Theme sync
+  if(localStorage.getItem("theme")==="light"){document.body.classList.add("light-theme");}
+
+  // Amount auto from previous selection
+  const amountBox = document.getElementById("amountBox");
+  const selectedPrice = localStorage.getItem("selectedPrice");
+  if(selectedPrice){amountBox.value = "$" + selectedPrice;}
+
+  // Payment details
+  const paymentButtons = document.querySelectorAll(".payment-options button");
+  const paymentDetails = document.getElementById("paymentDetails");
+  let selectedMethod = "";
+
+  paymentButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      paymentButtons.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      selectedMethod = btn.dataset.method;
+
+      switch(selectedMethod){
+        case "Bkash":
+          paymentDetails.textContent = "Send Money to +8801846281788 (Cashout charge applicable)";
+          break;
+        case "USDT":
+          paymentDetails.textContent = "Withdraw your funds to TV97HuyJejJ1pqmD1hKLb3BSFJWpvC47cQ";
+          break;
+        case "BTC":
+          paymentDetails.textContent = "Withdraw your funds to 17KJfrgFwEKaygt8QoBdEHk8NE2ugJjNVp";
+          break;
+        case "LTC":
+          paymentDetails.textContent = "Withdraw your funds to Ldvm4EwQTbPyWxu6mq3bJpBYq2nsQFKpzt";
+          break;
+      }
+      paymentDetails.classList.add("show");
+    });
+  });
+
+  // Payment button
+  document.getElementById("payBtn").addEventListener("click", () => {
+    const txn = document.getElementById("txnId").value.trim();
+    if(!selectedMethod){alert("Please select a payment method!"); return;}
+    if(!txn){alert("Please enter your Transaction ID or Code!"); return;}
+    document.getElementById("successMsg").style.display = "block";
+  });
+
+  // Telegram float
+  const telegramBtn = document.getElementById("telegramBtn");
+  telegramBtn.addEventListener("click",()=>{window.open("https://t.me/couldproxy_limited/","_blank");});
+
+  // Draggable Telegram
+  telegramBtn.onmousedown = function(event){
+    let shiftX = event.clientX - telegramBtn.getBoundingClientRect().left;
+    let shiftY = event.clientY - telegramBtn.getBoundingClientRect().top;
+    function moveAt(pageX,pageY){
+      telegramBtn.style.left = pageX - shiftX + 'px';
+      telegramBtn.style.top = pageY - shiftY + 'px';
+    }
+    function onMouseMove(event){
+      telegramBtn.style.position='fixed';
+      moveAt(event.pageX,event.pageY);
+    }
+    document.addEventListener('mousemove',onMouseMove);
+    telegramBtn.onmouseup=function(){
+      document.removeEventListener('mousemove',onMouseMove);
+      telegramBtn.onmouseup=null;
+    }
+  };
+  telegramBtn.ondragstart=()=>false;
+</script>
+</body>
+</html>

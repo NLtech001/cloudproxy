@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Proxy - CloudProxy</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Poppins", sans-serif; }
+  body { background: var(--bg-color); color: var(--text-color); transition: all 0.3s ease; min-height: 100vh; }
+
+  :root {
+    --bg-color: #0f172a;
+    --card-color: #1e293b;
+    --text-color: #ffffff;
+    --primary: #38bdf8;
+    --input-bg: #334155;
+    --success-color: #22c55e;
+  }
+  .light-theme {
+    --bg-color: #f8fafc;
+    --card-color: #e2e8f0;
+    --text-color: #0f172a;
+    --primary: #2563eb;
+    --input-bg: #cbd5e1;
+    --success-color: #16a34a;
+  }
+
+  header { display: flex; align-items: center; gap: 1rem; padding: 1rem 2rem; }
+  .back-btn {
+    background: var(--primary); color: #0f172a; padding: 0.6rem 1.2rem;
+    border: none; border-radius: 0.6rem; cursor: pointer; font-weight: bold;
+    display: flex; align-items: center; gap: 0.4rem; transition: 0.3s;
+  }
+  .back-btn:hover { opacity: 0.85; transform: translateY(-2px); }
+
+  main { max-width: 600px; margin: 2rem auto; background: var(--card-color);
+    padding: 2rem; border-radius: 1rem; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+
+  h2 { text-align: center; margin-bottom: 1.5rem; color: var(--primary); }
+
+  .input-group { margin-bottom: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .input-group input {
+    flex: 1; padding: 0.8rem; border-radius: 0.6rem; border: none;
+    background: var(--input-bg); color: var(--text-color); font-size: 1rem;
+  }
+  .input-group button {
+    padding: 0.8rem 1.2rem; border: none; border-radius: 0.6rem;
+    background: var(--primary); color: #0f172a; cursor: pointer;
+    font-weight: bold; transition: 0.3s; display: flex; align-items: center; gap: 0.4rem;
+  }
+  .input-group button:hover { opacity: 0.85; transform: translateY(-2px); }
+
+  .proxy-box { margin-top: 1.5rem; background: var(--input-bg);
+    border-radius: 0.8rem; padding: 1rem; font-family: monospace; line-height: 1.6;
+    white-space: pre-line; position: relative; transition: all 0.3s; max-height: 400px; overflow-y: auto; }
+  .proxy-entry { opacity: 0; transform: translateY(-20px); transition: all 0.5s ease; margin-bottom: 1rem; }
+
+  .btn-group { display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap; }
+  .btn-group button {
+    flex: 1; padding: 0.8rem 1.2rem; border: none; border-radius: 0.6rem;
+    font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+    transition: 0.3s;
+  }
+  .clear-btn { background: #dc2626; color: #fff; }
+  .clear-btn:hover { background: #b91c1c; transform: translateY(-2px); }
+  .copy-btn { background: var(--success-color); color: #0f172a; }
+  .copy-btn:hover { background: #16a34a; transform: translateY(-2px); }
+</style>
+</head>
+<body>
+<header>
+  <button class="back-btn" onclick="window.location.href='dashboard.html'">
+    <i class="fas fa-arrow-left"></i> Back to Dashboard
+  </button>
+</header>
+
+<main>
+  <h2>Get Your Proxy</h2>
+  <div class="input-group">
+    <input type="text" id="transactionId" placeholder="Enter Transaction / Order ID">
+    <button id="getProxyBtn"><i class="fas fa-download"></i> Get Proxy</button>
+  </div>
+
+  <div class="proxy-box" id="proxyBox"></div>
+
+  <div class="btn-group hidden" id="actionBtns">
+    <button class="copy-btn" id="copyBtn"><i class="fas fa-copy"></i> Copy Proxy</button>
+    <button class="clear-btn" id="clearBtn"><i class="fas fa-trash"></i> Clear</button>
+  </div>
+</main>
+
+<script>
+  // Theme sync
+  if(localStorage.getItem("theme") === "light") document.body.classList.add("light-theme");
+
+  const getProxyBtn = document.getElementById("getProxyBtn");
+  const proxyBox = document.getElementById("proxyBox");
+  const actionBtns = document.getElementById("actionBtns");
+  const copyBtn = document.getElementById("copyBtn");
+  const clearBtn = document.getElementById("clearBtn");
+
+  const proxyMap = {
+    "TXN123": `Host / Server : 123.45.67.101
+Port : 8080
+Username : user1
+Password : pass1`,
+    "ORDER456": `Host / Server : 123.45.67.102
+Port : 8081
+Username : user2
+Password : pass2`,
+    "ABC789": `Host / Server : 123.45.67.103
+Port : 8082
+Username : user3
+Password : pass3`
+  };
+
+  // Load saved proxies (persistent across app close)
+  let savedProxies = JSON.parse(localStorage.getItem("userProxy") || "[]");
+  savedProxies.forEach(proxy => addProxyEntry(proxy, false));
+
+  function addProxyEntry(text, animate=true){
+    const entry = document.createElement("div");
+    entry.className = "proxy-entry";
+    entry.textContent = text;
+    proxyBox.appendChild(entry);
+    if(animate){
+      setTimeout(()=>{ entry.style.opacity = "1"; entry.style.transform="translateY(0)"; }, 50);
+    } else {
+      entry.style.opacity = "1"; entry.style.transform="translateY(0)";
+    }
+    actionBtns.classList.remove("hidden");
+  }
+
+  getProxyBtn.addEventListener("click", ()=>{
+    const txnId = document.getElementById("transactionId").value.trim();
+    if(!txnId){ alert("Please enter your transaction ID"); return; }
+    if(proxyMap[txnId]){
+      addProxyEntry(proxyMap[txnId]);
+      savedProxies.push(proxyMap[txnId]);
+      localStorage.setItem("userProxy", JSON.stringify(savedProxies));
+    } else {
+      alert("Invalid transaction/order ID.");
+    }
+  });
+
+  clearBtn.addEventListener("click", ()=>{
+    proxyBox.innerHTML = "";
+    savedProxies = [];
+    actionBtns.classList.add("hidden");
+    localStorage.removeItem("userProxy");
+  });
+
+  copyBtn.addEventListener("click", ()=>{
+    const allText = Array.from(proxyBox.children).map(c => c.textContent).join("\n\n");
+    navigator.clipboard.writeText(allText).then(()=>{
+      copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+      setTimeout(()=>copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy Proxy', 1500);
+    });
+  });
+</script>
+</body>
+</html>

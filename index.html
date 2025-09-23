@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CloudProxy - Login</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Poppins", sans-serif; }
+    body { height: 100vh; display: flex; justify-content: center; align-items: center; background: linear-gradient(135deg, #0f172a, #1e293b); color: #fff; }
+    .login-box { background: rgba(255, 255, 255, 0.06); padding: 2rem; border-radius: 1.2rem; width: 100%; max-width: 380px; box-shadow: 0 10px 25px rgba(0,0,0,0.4); text-align: center; animation: fadeIn 0.8s ease-in-out; }
+    .login-box h2 { margin-bottom: 1.5rem; font-size: 1.8rem; color: #38bdf8; }
+    .form-group { margin-bottom: 1rem; text-align: left; }
+    .form-group label { display: block; font-size: 0.9rem; margin-bottom: 0.4rem; color: #cbd5e1; }
+    .form-group input { width: 100%; padding: 0.7rem; border: none; border-radius: 0.6rem; outline: none; background: #1e293b; color: #fff; }
+    .form-group input:focus { border: 1px solid #38bdf8; background: #0f172a; }
+    button { width: 100%; padding: 0.9rem; margin-top: 1rem; border: none; border-radius: 0.6rem; background: #38bdf8; color: #0f172a; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
+    button:hover { background: #0ea5e9; }
+    p { margin-top: 1rem; font-size: 0.9rem; }
+    p a { color: #38bdf8; text-decoration: none; font-weight: 500; }
+    p a:hover { text-decoration: underline; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+  <div class="login-box">
+    <h2>Welcome Back to CloudProxy</h2>
+    <form id="loginForm">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" placeholder="Enter your email" required>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" placeholder="Enter your password" required>
+      </div>
+      <button type="submit">Login</button>
+    </form>
+    <p>Don’t have an account? <a href="signup.html">Sign Up</a></p>
+  </div>
+
+  <script>
+    // On form submit, redirect to dashboard.html
+    document.getElementById("loginForm").addEventListener("submit", function(e) {
+      e.preventDefault(); // stop default form submit
+      window.location.href = "dashboard.html";
+    });
+  </script>
+</body>
+</html>
